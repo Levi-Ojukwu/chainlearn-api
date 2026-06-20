@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifySchema } from "fastify";
 import { quizController } from "./quiz.controller.js";
 import { authGuard } from "../../middleware/auth.js";
 import { validate } from "../../middleware/validation.js";
@@ -14,9 +14,9 @@ export async function quizRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "Generate a quiz for a course module",
         tags: ["quizzes"],
-      },
+      } as FastifySchema,
     },
-    quizController.generate.bind(quizController)
+    ((request: any, reply: any) => quizController.generate(request, reply)) as any
   );
 
   app.post(
@@ -28,8 +28,8 @@ export async function quizRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "Submit quiz answers",
         tags: ["quizzes"],
-      },
+      } as FastifySchema,
     },
-    quizController.submit.bind(quizController)
+    ((request: any, reply: any) => quizController.submit(request, reply)) as any
   );
 }

@@ -13,7 +13,7 @@ import { StellarError } from "../utils/errors.js";
  */
 export class StellarClient {
   private horizon: StellarSdk.Horizon.Server;
-  private soroban: StellarSdk.SorobanRpc.Server;
+  private soroban: StellarSdk.rpc.Server;
   private networkPassphrase: string;
 
   constructor() {
@@ -45,7 +45,7 @@ export class StellarClient {
   /** Submit a pre-built transaction envelope to the network. */
   async submitTransaction(
     txEnvelope: StellarSdk.Transaction | StellarSdk.FeeBumpTransaction
-  ): Promise<StellarSdk.Horizon.SubmitTransactionResponse> {
+  ): Promise<StellarSdk.Horizon.HorizonApi.SubmitTransactionResponse> {
     try {
       const result = await this.horizon.submitTransaction(txEnvelope);
       logger.info({ hash: result.hash }, "Transaction submitted successfully");
@@ -71,9 +71,8 @@ export class StellarClient {
     contractId: string,
     method: string,
     ...args: StellarSdk.xdr.ScVal[]
-  ): Promise<StellarSdk.xdr.ScVal> {
+  ): Promise<StellarSdk.rpc.Api.LedgerEntryResult> {
     try {
-      const contract = new StellarSdk.Contract(contractId);
       const result = await this.soroban.getContractData(
         contractId,
         StellarSdk.xdr.ScVal.scvSymbol(method)
@@ -91,7 +90,7 @@ export class StellarClient {
   }
 
   /** Get the Soroban RPC server for advanced usage. */
-  getSorobanRpc(): StellarSdk.SorobanRpc.Server {
+  getSorobanRpc(): StellarSdk.rpc.Server {
     return this.soroban;
   }
 }

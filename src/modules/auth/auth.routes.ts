@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifySchema } from "fastify";
 import { authController } from "./auth.controller.js";
 import { validate } from "../../middleware/validation.js";
 import { challengeSchema, verifySchema } from "./auth.types.js";
@@ -18,9 +18,9 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
             stellarAddress: { type: "string" },
           },
         },
-      },
+      } as FastifySchema,
     },
-    authController.challenge.bind(authController)
+    ((request: any, reply: any) => authController.challenge(request, reply)) as any
   );
 
   app.post(
@@ -38,8 +38,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
             signedChallenge: { type: "string" },
           },
         },
-      },
+      } as FastifySchema,
     },
-    authController.verify.bind(authController)
+    ((request: any, reply: any) => authController.verify(request, reply)) as any
   );
 }

@@ -1,11 +1,10 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifySchema } from "fastify";
 import { courseController } from "./course.controller.js";
 import { authGuard, optionalAuth } from "../../middleware/auth.js";
 import { validate } from "../../middleware/validation.js";
 import { listCoursesSchema, courseIdParamsSchema } from "./course.types.js";
 
 export async function courseRoutes(app: FastifyInstance): Promise<void> {
-  // Public listing — auth optional (to show enrollment status)
   app.get(
     "/",
     {
@@ -13,12 +12,11 @@ export async function courseRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "List available courses",
         tags: ["courses"],
-      },
+      } as FastifySchema,
     },
-    courseController.list.bind(courseController)
+    ((request: any, reply: any) => courseController.list(request, reply)) as any
   );
 
-  // Public detail — auth optional
   app.get(
     "/:id",
     {
@@ -26,12 +24,11 @@ export async function courseRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "Get course details by ID",
         tags: ["courses"],
-      },
+      } as FastifySchema,
     },
-    courseController.getById.bind(courseController)
+    ((request: any, reply: any) => courseController.getById(request, reply)) as any
   );
 
-  // Enrollment requires authentication
   app.post(
     "/:id/enroll",
     {
@@ -39,8 +36,8 @@ export async function courseRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "Enroll in a course",
         tags: ["courses"],
-      },
+      } as FastifySchema,
     },
-    courseController.enroll.bind(courseController)
+    ((request: any, reply: any) => courseController.enroll(request, reply)) as any
   );
 }

@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifySchema } from "fastify";
 import { rewardController } from "./reward.controller.js";
 import { authGuard } from "../../middleware/auth.js";
 import { validate } from "../../middleware/validation.js";
@@ -14,9 +14,9 @@ export async function rewardRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "Claim a reward for a passed quiz",
         tags: ["rewards"],
-      },
+      } as FastifySchema,
     },
-    rewardController.claim.bind(rewardController)
+    ((request: any, reply: any) => rewardController.claim(request, reply)) as any
   );
 
   app.get(
@@ -25,8 +25,8 @@ export async function rewardRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "Get reward claim history",
         tags: ["rewards"],
-      },
+      } as FastifySchema,
     },
-    rewardController.history.bind(rewardController)
+    ((request: any, reply: any) => rewardController.history(request, reply)) as any
   );
 }

@@ -5,8 +5,8 @@ export function getHorizonServer(): StellarSdk.Horizon.Server {
   return new StellarSdk.Horizon.Server(config.STELLAR_HORIZON_URL);
 }
 
-export function getSorobanServer(): StellarSdk.SorobanRpc.Server {
-  return new StellarSdk.SorobanRpc.Server(config.STELLAR_SOROBAN_RPC_URL);
+export function getSorobanServer(): StellarSdk.rpc.Server {
+  return new StellarSdk.rpc.Server(config.STELLAR_SOROBAN_RPC_URL);
 }
 
 export function getNetworkPassphrase(): string {

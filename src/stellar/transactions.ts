@@ -35,13 +35,13 @@ export async function invokeContract(
   // Simulate first to avoid submitting doomed txs
   const soroban = getSorobanServer();
   const simResult = await soroban.simulateTransaction(tx);
-  if (StellarSdk.SorobanRpc.Api.isSimulationError(simResult)) {
+  if (StellarSdk.rpc.Api.isSimulationError(simResult)) {
     logger.error({ error: simResult.error }, "Simulation failed");
     throw new StellarError(`Simulation failed: ${simResult.error}`);
   }
 
   // Prepare the transaction with the simulation results
-  const preparedTx = StellarSdk.SorobanRpc.assembleTransaction(tx, simResult).build();
+  const preparedTx = StellarSdk.rpc.assembleTransaction(tx, simResult).build();
   preparedTx.sign(keypair);
 
   const result = await stellarClient.submitTransaction(preparedTx);
