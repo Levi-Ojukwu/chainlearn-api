@@ -6,6 +6,8 @@ import { withLock } from "../../utils/lock.js";
 import { createQuizProof } from "../../stellar/signatures.js";
 import { logger } from "../../utils/logger.js";
 import { generateQuizFromAI } from "./ai-client.js";
+import { auditLog } from "../../audit/index.js";
+import { quizSubmissionsTotal } from "../../metrics/index.js";
 import type {
   GenerateQuizBody,
   SubmitQuizBody,
@@ -200,6 +202,14 @@ export class QuizService {
           })
           .returning();
 
+        quizSubmissionsTotal.inc({ result: passed ? "passed" : "failed" });
+        auditLog("quiz.submitted", {
+          userId,
+          submissionId: submission.id,
+          score: correctCount,
+          total: totalQuestions,
+          passed,
+        });
         logger.info(
           {
             submissionId: submission.id,
