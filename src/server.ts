@@ -1,3 +1,6 @@
+import { initTracing, shutdownTracing } from "./tracing.js";
+initTracing();
+
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
@@ -5,6 +8,8 @@ import rateLimit from "@fastify/rate-limit";
 import { sql } from "drizzle-orm";
 import { config } from "./config/index.js";
 import { logger } from "./utils/logger.js";
+import { registry } from "./metrics/index.js";
+import { registerMetricsHook } from "./metrics/fastify-hook.js";
 import { registerErrorHandler } from "./middleware/error-handler.js";
 import { rateLimitOptions } from "./middleware/rate-limit.js";
 import { db } from "./config/database.js";
@@ -71,6 +76,9 @@ async function buildApp() {
 
   await app.register(rateLimit, rateLimitOptions());
 
+  // ─── Observability ──────────────────────────────────────────────────────
+  registerMetricsHook(app);
+
   // ─── Error Handler ──────────────────────────────────────────────────────
   registerErrorHandler(app);
 
@@ -98,6 +106,11 @@ async function buildApp() {
         stellar: stellarCheck.status === "fulfilled" ? "ok" : "error",
       },
     });
+  });
+
+  app.get("/metrics", async (_request, reply) => {
+    reply.header("Content-Type", registry.contentType);
+    return reply.send(await registry.metrics());
   });
 
   app.get("/health/live", async () => ({ status: "ok" }));
@@ -145,6 +158,7 @@ async function start() {
     await app.close();
     await closeDatabase();
     await closeRedis();
+    await shutdownTracing();
     logger.info("Server shut down cleanly");
     process.exit(0);
   };
