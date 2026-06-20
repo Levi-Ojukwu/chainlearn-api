@@ -38,6 +38,23 @@ let _config: Env | null = null;
 function loadConfig(): Env {
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
+    if (process.env.NODE_ENV === "test") {
+      // In test mode, warn but don't exit — tests mock what they need
+      console.warn(
+        "Missing env vars in test mode (expected if mocking config):",
+        result.error.flatten().fieldErrors
+      );
+      return envSchema.parse({
+        DATABASE_URL: "postgresql://localhost:5432/test",
+        JWT_SECRET: "test-secret-key-that-is-at-least-64-characters-long",
+        STELLAR_HORIZON_URL: "https://horizon-testnet.stellar.org",
+        STELLAR_SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org",
+        STELLAR_PLATFORM_SECRET: "test",
+        STELLAR_QUIZ_CONTRACT_ID: "test",
+        STELLAR_REWARD_CONTRACT_ID: "test",
+        STELLAR_CREDENTIAL_CONTRACT_ID: "test",
+      });
+    }
     console.error(
       "Invalid environment variables:",
       result.error.flatten().fieldErrors
