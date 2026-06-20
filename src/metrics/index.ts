@@ -2,8 +2,11 @@ import {
   Registry,
   Counter,
   Histogram,
+  Gauge,
   collectDefaultMetrics,
 } from "prom-client";
+import type { Pool } from "pg";
+import type { Redis } from "ioredis";
 
 export const registry = new Registry();
 
@@ -51,3 +54,28 @@ export const credentialsMintedTotal = new Counter({
   help: "Total on-chain credentials minted",
   registers: [registry],
 });
+
+export function setupInfraMetrics(pool: Pool, redisClient: Redis): void {
+  new Gauge({
+    name: "db_active_connections",
+    help: "Number of active (checked-out) PostgreSQL connections",
+    registers: [registry],
+    collect() {
+      this.set(pool.totalCount - pool.idleCount);
+    },
+  });
+
+  let redisConnected = 0;
+  redisClient.on("connect", () => { redisConnected = 1; });
+  redisClient.on("close", () => { redisConnected = 0; });
+  redisClient.on("error", () => { redisConnected = 0; });
+
+  new Gauge({
+    name: "redis_connected",
+    help: "Whether the Redis client is currently connected (1 = connected, 0 = disconnected)",
+    registers: [registry],
+    collect() {
+      this.set(redisConnected);
+    },
+  });
+}

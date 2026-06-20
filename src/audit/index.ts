@@ -19,6 +19,8 @@ interface AuditFields {
   total?: number;
   passed?: boolean;
   queued?: boolean;
+  ip?: string;
+  userAgent?: string;
   [key: string]: unknown;
 }
 

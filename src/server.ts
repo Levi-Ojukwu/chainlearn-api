@@ -8,7 +8,7 @@ import rateLimit from "@fastify/rate-limit";
 import { sql } from "drizzle-orm";
 import { config } from "./config/index.js";
 import { logger } from "./utils/logger.js";
-import { registry } from "./metrics/index.js";
+import { registry, setupInfraMetrics } from "./metrics/index.js";
 import { registerMetricsHook } from "./metrics/fastify-hook.js";
 import { registerErrorHandler } from "./middleware/error-handler.js";
 import { rateLimitOptions } from "./middleware/rate-limit.js";
@@ -31,7 +31,7 @@ import { rewardRoutes } from "./modules/rewards/reward.routes.js";
 import { credentialRoutes } from "./modules/credentials/credential.routes.js";
 
 // Shutdown helpers
-import { closeDatabase } from "./config/database.js";
+import { pool, closeDatabase } from "./config/database.js";
 import { closeRedis } from "./config/redis.js";
 
 async function processRetryJob(job: RetryJob): Promise<boolean> {
@@ -77,6 +77,7 @@ async function buildApp() {
   await app.register(rateLimit, rateLimitOptions());
 
   // ─── Observability ──────────────────────────────────────────────────────
+  setupInfraMetrics(pool, redis);
   registerMetricsHook(app);
 
   // ─── Error Handler ──────────────────────────────────────────────────────
