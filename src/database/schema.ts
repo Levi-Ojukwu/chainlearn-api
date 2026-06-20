@@ -94,40 +94,58 @@ export const quizzes = pgTable("quizzes", {
 
 // ─── Quiz Submissions ───────────────────────────────────────────────────────
 
-export const quizSubmissions = pgTable("quiz_submissions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  quizId: uuid("quiz_id")
-    .notNull()
-    .references(() => quizzes.id, { onDelete: "cascade" }),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  answers: jsonb("answers").notNull(),
-  score: integer("score"),
-  feedback: text("feedback"),
-  rewardClaimed: boolean("reward_claimed").notNull().default(false),
-  txHash: varchar("tx_hash", { length: 64 }),
-  submittedAt: timestamp("submitted_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const quizSubmissions = pgTable(
+  "quiz_submissions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    quizId: uuid("quiz_id")
+      .notNull()
+      .references(() => quizzes.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    answers: jsonb("answers").notNull(),
+    score: integer("score"),
+    feedback: text("feedback"),
+    rewardClaimed: boolean("reward_claimed").notNull().default(false),
+    txHash: varchar("tx_hash", { length: 64 }),
+    submittedAt: timestamp("submitted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("idx_quiz_submissions_quiz_user").on(
+      table.quizId,
+      table.userId
+    ),
+  ]
+);
 
 // ─── Credentials (NFT Certificates) ────────────────────────────────────────
 
-export const credentials = pgTable("credentials", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  courseId: uuid("course_id")
-    .notNull()
-    .references(() => courses.id, { onDelete: "cascade" }),
-  score: integer("score").notNull(),
-  nftAssetCode: varchar("nft_asset_code", { length: 12 }),
-  nftIssuer: varchar("nft_issuer", { length: 56 }),
-  mintTxHash: varchar("mint_tx_hash", { length: 64 }),
-  revoked: boolean("revoked").notNull().default(false),
-  mintedAt: timestamp("minted_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const credentials = pgTable(
+  "credentials",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    score: integer("score").notNull(),
+    nftAssetCode: varchar("nft_asset_code", { length: 12 }),
+    nftIssuer: varchar("nft_issuer", { length: 56 }),
+    mintTxHash: varchar("mint_tx_hash", { length: 64 }),
+    revoked: boolean("revoked").notNull().default(false),
+    mintedAt: timestamp("minted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("idx_credentials_user_course").on(
+      table.userId,
+      table.courseId
+    ),
+  ]
+);

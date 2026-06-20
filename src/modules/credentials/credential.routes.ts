@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifySchema } from "fastify";
 import { credentialController } from "./credential.controller.js";
 import { authGuard } from "../../middleware/auth.js";
 import { validate } from "../../middleware/validation.js";
@@ -14,9 +14,9 @@ export async function credentialRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "Mint a course completion credential (NFT)",
         tags: ["credentials"],
-      },
+      } as FastifySchema,
     },
-    credentialController.mint.bind(credentialController)
+    ((request: any, reply: any) => credentialController.mint(request, reply)) as any
   );
 
   app.get(
@@ -25,8 +25,8 @@ export async function credentialRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         description: "List user credentials",
         tags: ["credentials"],
-      },
+      } as FastifySchema,
     },
-    credentialController.list.bind(credentialController)
+    ((request: any, reply: any) => credentialController.list(request, reply)) as any
   );
 }
