@@ -166,4 +166,6 @@ async function start() {
 
 export { buildApp };
 
-start();
+if (process.env.NODE_ENV !== "test") {
+  start();
+}
